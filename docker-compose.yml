@@ -1,0 +1,19 @@
+version: '3'
+services:
+  server:
+    image: uconn/express
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./entrypoint/entrypoint.sh:/entrypoint.sh
+      - ./:/project
+    entrypoint: ["/entrypoint.sh"]
+  mysqldb:
+    image: mysql:5.7
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql
+      MYSQL_PASSWORD: mysql
+      MYSQL_USER: mysql
+      MYSQL_DATABASE: mysql
