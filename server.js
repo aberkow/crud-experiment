@@ -12,6 +12,7 @@ app.get('/', (req, res) => {
   res.send('home page')
 })
 
+// delegate API requests to specific routes
 app.use('/api', routes);
 
 app.listen(PORT, () => {

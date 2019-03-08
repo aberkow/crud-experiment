@@ -4,17 +4,42 @@ const router = express.Router();
 const pool = require('../utils/pool');
 const { queryDB } = require('../utils/helpers');
 
+// all routes under here will be part of the API.
 router.get('/', (req, res) => {
   res.send({ message: 'api home' })
 })
 
-router.get('/posts', async (req, res) => {
-  const qs = 'SELECT * FROM wp_posts WHERE post_status LIKE "publish" LIMIT 10'
-  const results = await queryDB(pool, qs)
 
-  res.send(results)
+/**
+ * 
+ * GET posts with pagination
+ * 
+ */
+router.get('/posts', async (req, res) => {
+  const status = req.query.status || 'publish'
+  const limit = req.query.limit || 10;
+  const page = req.query.page || 1;
+  const offset = (limit + 1) * (page - 1);
+  const qs = `
+    SELECT * FROM wp_posts 
+      WHERE post_status LIKE "${status}" 
+      LIMIT ${limit}
+      OFFSET ${offset}
+  `
+
+  await queryDB(pool, qs)
+    .then(results => res.send(results))
+    .catch(err => {
+      console.log(err);
+      res.send({ error: err })
+    })
 })
 
+/**
+ * 
+ * add a new post. ID is auto incremented
+ * 
+ */
 router.post('/posts', async (req, res) => {
   const qs = `INSERT INTO wp_posts (
 	post_author,
@@ -66,6 +91,11 @@ router.post('/posts', async (req, res) => {
     })
 })
 
+/**
+ * 
+ * Update a post by ID
+ * 
+ */
 router.put('/posts/:id', async (req, res) => {
 
   const qs = `
@@ -86,6 +116,11 @@ router.put('/posts/:id', async (req, res) => {
     })
 })
 
+/**
+ * 
+ * Delete a post by ID
+ * 
+ */
 router.delete('/posts/:id', async (req, res) => {
   const qs = `DELETE FROM wp_posts WHERE ID=${req.params.id}`;
 
