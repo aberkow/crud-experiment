@@ -1,0 +1,1 @@
+A variety of queries that could be useful to know.
