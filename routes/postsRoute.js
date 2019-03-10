@@ -11,17 +11,25 @@ const { queryDB } = require('../utils/helpers');
  */
 postsRoute.get('/', async (req, res) => {
   const status = req.query.status || 'publish'
+  const type = req.query.post_type || 'post'
   const limit = req.query.limit || 10;
   const page = req.query.page || 1;
   const offset = (limit + 1) * (page - 1);
-  const qs = `
+
+  const sql = `
     SELECT * FROM wp_posts 
-      WHERE post_status LIKE "${status}" 
-      LIMIT ${limit}
-      OFFSET ${offset}
+      WHERE post_status LIKE ?
+      AND post_type LIKE ?
+      LIMIT ?
+      OFFSET ?
   `
 
-  await queryDB(pool, qs)
+  const query = {
+    sql,
+    values: [status, type, limit, offset]
+  }
+
+  await queryDB(pool, query)
     .then(results => res.send(results))
     .catch(err => {
       console.log(err);
@@ -92,12 +100,20 @@ postsRoute.post('/', async (req, res) => {
  */
 postsRoute.put('/:id', async (req, res) => {
 
-  const qs = `
-  UPDATE wp_posts 
-    SET post_title="Updated Post" 
-    WHERE ID=${req.params.id}
+  const id = req.params.id
+
+  const sql = `
+  UPDATE wp_posts
+    SET post_title="Updated Post"
+    WHERE ID=?
   `
-  await queryDB(pool, qs)
+
+  const query = {
+    sql,
+    values: [id]
+  }
+
+  await queryDB(pool, query)
     .then(data => {
       res.send({
         message: 'Post Updated',
@@ -116,9 +132,17 @@ postsRoute.put('/:id', async (req, res) => {
  * 
  */
 postsRoute.delete('/:id', async (req, res) => {
-  const qs = `DELETE FROM wp_posts WHERE ID=${req.params.id}`;
 
-  await queryDB(pool, qs)
+  const id = req.params.id;
+
+  const sql = `DELETE FROM wp_posts WHERE ID=?`
+
+  const query = {
+    sql,
+    values: [id]
+  }
+
+  await queryDB(pool, query)
     .then(data => {
       res.send({
         message: 'Post Deleted',
