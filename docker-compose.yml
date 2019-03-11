@@ -1,7 +1,7 @@
 version: '3'
 services:
   server:
-    image: uconn/express
+    image: uconn/express:1.1.0
     ports:
       - "3000:3000"
     volumes:
