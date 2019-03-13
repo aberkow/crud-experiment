@@ -27,6 +27,10 @@ app.get('/', (req, res) => {
   res.render('home', { title: 'Home' })
 })
 
+app.get('/admin', (req, res) => {
+  res.render('admin/home', { title: 'Admin' })
+})
+
 // delegate API requests to specific routes
 app.use('/api', routes);
 
