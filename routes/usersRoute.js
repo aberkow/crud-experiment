@@ -13,9 +13,43 @@ usersRoute.get('/', async (req, res) => {
   }
 
   await queryDB(pool, query)
-    .then(results, res.send(results))
+    .then(results => res.send(results))
     .catch(err => {
       console.log(err);
       res.send({ error: err })
     })
 })
+
+usersRoute.post('/new', async (req, res) => {
+  const sql = `
+  INSERT INTO wp_usermeta (
+		user_id,
+		meta_key,
+		meta_value
+	) VALUES (
+		1,
+		'test',
+		?
+	);`
+
+  const values = [
+    {
+      item: 'test'
+    }
+  ]  
+
+
+  const query = {
+    sql,
+    values
+  }
+
+  await queryDB(pool, query)
+    .then(results => res.send(results))
+    .catch(err => {
+      console.log(err);
+      res.send({ error: err })
+    })
+})
+
+module.exports = usersRoute;
