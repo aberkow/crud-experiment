@@ -1,6 +1,8 @@
 const express = require('express');
 const usersRoute = express.Router();
 
+const php = require('js-php-serialize')
+
 const pool = require('../utils/pool')
 const { queryDB } = require('../utils/helpers')
 
@@ -32,11 +34,13 @@ usersRoute.post('/new', async (req, res) => {
 		?
 	);`
 
-  const values = [
-    {
-      item: 'test'
-    }
-  ]  
+  const test = php.serialize({ 
+    attack: encodeURIComponent('</script>')
+  })
+
+  console.log(JSON.stringify(test, null, '\t'), 'test')
+
+  const values = [ test ]  
 
 
   const query = {
