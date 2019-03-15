@@ -34,11 +34,11 @@ usersRoute.post('/new', async (req, res) => {
 		?
 	);`
 
+  // js-php-serialize doesn't encode dangerous strings.
+  // sanitize them with encodeURIComponent
   const test = php.serialize({ 
     attack: encodeURIComponent('</script>')
   })
-
-  console.log(JSON.stringify(test, null, '\t'), 'test')
 
   const values = [ test ]  
 
