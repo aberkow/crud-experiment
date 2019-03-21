@@ -20,8 +20,8 @@ app.engine('hbs', hbs({
 app.set('view engine', 'hbs');
 
 app.use(express.static('public'))
+app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
-app.use(bodyParser({ extended: true }))
 
 app.get('/', (req, res) => {
   res.render('home', { title: 'Home' })
