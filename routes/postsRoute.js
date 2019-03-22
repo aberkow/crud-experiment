@@ -2,7 +2,7 @@ const express = require('express');
 const postsRoute = express.Router();
 
 const pool = require('../utils/pool');
-const { getTimeZoneOffset, queryDB } = require('../utils/helpers');
+const { queryDB } = require('../utils/helpers');
 
 /**
  * 
@@ -29,7 +29,7 @@ postsRoute.get('/', async (req, res) => {
     values: [status, type, limit, offset]
   }
 
-  const timeZoneOffset = await getTimeZoneOffset(pool)
+  
 
   await queryDB(pool, query)
     .then(results => res.send(results))

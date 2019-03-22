@@ -2,6 +2,9 @@ module.exports = {
   /**
    * 
    * make a DB query 
+   * this function can either store its result in a variable 
+   * or pass it off to a then/catch chain
+   * 
    * @argument pool the connection pool for the db
    * @argument queryObj the query for the db. Includes escaped values
    * see: 
@@ -12,40 +15,12 @@ module.exports = {
    * 
    */
   queryDB: async (pool, queryObj) => {
-    try {
-      const result = await pool.query(queryObj)
-      return result;
-    } catch (error) {
-      throw new Error(`queryDB error -> ${error}`)
-    }
-  },
-
-  /**
-   * 
-   * Get the value of the timezones.
-   * Helps with POSTing or PUTing new data to the db.
-   * 
-   * @argument pool - the db connection pool
-   * 
-   * @return {array}
-   */
-  getTimeZoneOffset: async (pool) => {
     let result;
     try {
-      const sql = `
-        SELECT option_name, option_value FROM wp_options
-          WHERE option_name=?
-            OR option_name=?
-      `
-      // escape the requested values just in case...
-      const values = ["gmt_offset", "timezone_string"]
-
-      const queryObj = { sql, values }
-
       result = await pool.query(queryObj)
       return result;
     } catch (error) {
       throw new Error(`queryDB error -> ${error}`)
     }
-  }
+  },
 }
