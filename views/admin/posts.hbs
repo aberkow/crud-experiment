@@ -1,9 +1,15 @@
 <section class="row">
   <div class="container">
     <h1>Posts</h1>
-    {{!-- have to figure out how this works... --}}
-    {{ #each data }}
-    {{post_title}}
-    {{ /each }}
+
+    <ol>
+      {{#each data }}
+      <li>
+        <a href="/admin/posts/{{ID}}">
+          {{post_title}}
+        </a>  
+      </li>
+      {{/each }}
+    </ol>
   </div>
 </section>

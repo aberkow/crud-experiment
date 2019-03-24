@@ -25,6 +25,14 @@ app.use(express.static('public'))
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 
+// delegate API requests to specific routes
+app.use('/api', routes);
+
+// create a local axios instance just for querying the API
+const instance = axios.create({
+  baseURL: 'http://localhost:3000/api/'
+})
+
 app.get('/', (req, res) => {
   res.render('home', { title: 'Home' })
 })
@@ -35,9 +43,9 @@ app.get('/admin', (req, res) => {
 
 app.get('/admin/posts', (req, res) => {
 
-  axios.get('http://localhost:3000/api/posts')
-    .then(data => {
-      // res.render('')
+  instance.get('posts')
+    .then(({ data }) => {
+      
       res.render('admin/posts', { 
         title: 'Posts',
         data 
@@ -47,8 +55,22 @@ app.get('/admin/posts', (req, res) => {
 
 })
 
-// delegate API requests to specific routes
-app.use('/api', routes);
+app.get('/admin/posts/:id', (req, res) => {
+  instance.get(`posts/${req.params.id}`)
+    .then(({ data }) => {
+      console.log(data);
+      res.render('admin/posts/single', {
+        title: `Posts - ${data[0].post_title}`,
+        singlePost: data[0]
+      })
+    })
+    .catch(err => {
+      res.render('admin/posts/single', {
+        title: `Posts - error`,
+        error: err
+      })
+    })
+})
 
 app.listen(PORT, () => {
   console.log(`listening on ${PORT}`);

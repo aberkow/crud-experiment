@@ -39,6 +39,24 @@ postsRoute.get('/', async (req, res) => {
     })
 })
 
+postsRoute.get('/:id', async (req, res) => {
+  const id = req.params.id;
+
+  const sql = `
+    SELECT * FROM wp_posts WHERE ID=?;
+  `
+  const values = [ id ]
+
+  const query = { sql, values }
+
+  await queryDB(pool, query)
+    .then(results => res.send(results))
+    .catch(err => {
+      console.log(err);
+      res.send({ error: err })
+    })
+})
+
 /**
  * 
  * add a new post. ID is auto incremented
