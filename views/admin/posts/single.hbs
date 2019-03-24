@@ -1,8 +1,18 @@
 <h1>
   {{singlePost.post_title}}
 </h1>
-<form method="POST" action="/admin/posts/{{singlePost.ID}}">
+<div class="notification">
+  <p class="message"></p>
+</div>
+<form id="{{singlePost.post_type}}-form" 
+  method="POST" 
+  action="/admin/posts/{{singlePost.ID}}"
+  data-postID="{{singlePost.ID}}">
 {{!-- use triple braces for non-escaped value --}}
+  <label for="post-title">
+    Title:
+    <input type="text" name="post-title" id="post-title" value="{{singlePost.post_title}}"/>
+  </label>
   <label for="editor">Post Content</label>
   <div name="editor" id="editor">
     {{{singlePost.post_content}}}
