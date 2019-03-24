@@ -1,3 +1,18 @@
 <h1>
   {{singlePost.post_title}}
 </h1>
+<form method="POST" action="/admin/posts/{{singlePost.ID}}">
+{{!-- use triple braces for non-escaped value --}}
+  <label for="editor">Post Content</label>
+  <div name="editor" id="editor">
+    {{{singlePost.post_content}}}
+  </div>
+
+
+  {{!-- fallbacks --}}
+  <noscript>Hmm... Looks like javascript's not available right now. For the best experience, please re-load with javascript. Otherwise feel free to keep posting!</noscript>
+  <textarea name="fallback-editor" id="fallback-editor" cols="30" rows="10">{{{singlePost.post_content}}}</textarea>
+
+  {{!-- post input --}}
+  <input type="submit" value="Post">
+</form>

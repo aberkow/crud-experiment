@@ -58,7 +58,6 @@ app.get('/admin/posts', (req, res) => {
 app.get('/admin/posts/:id', (req, res) => {
   instance.get(`posts/${req.params.id}`)
     .then(({ data }) => {
-      console.log(data);
       res.render('admin/posts/single', {
         title: `Posts - ${data[0].post_title}`,
         singlePost: data[0]
