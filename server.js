@@ -45,7 +45,7 @@ app.get('/admin/posts', (req, res) => {
 
   instance.get('posts')
     .then(({ data }) => {
-      
+
       res.render('admin/posts', { 
         title: 'Posts',
         data 

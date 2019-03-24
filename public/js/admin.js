@@ -14,6 +14,7 @@ form.addEventListener('submit', async (evt) => {
   
   const id = form.getAttribute('data-postID')
   const postTitle = document.querySelector('#post-title').value
+  const postName = postTitle.toLowerCase().split(' ').join('-');
   const postContent = quill.getText()
 
   await fetch(`/api/posts/${id}`, {
@@ -25,6 +26,7 @@ form.addEventListener('submit', async (evt) => {
     body: JSON.stringify({
       data: {
         postTitle,
+        postName,
         postContent
       }
     })

@@ -1,6 +1,9 @@
 <h1>
   {{singlePost.post_title}}
 </h1>
+<div class="meta">
+  <p><a href="/{{singlePost.post_name}}">/{{singlePost.post_name}}</a></p>
+</div>
 <div class="notification">
   <p class="message"></p>
 </div>
@@ -11,8 +14,8 @@
 {{!-- use triple braces for non-escaped value --}}
   <label for="post-title">
     Title:
-    <input type="text" name="post-title" id="post-title" value="{{singlePost.post_title}}"/>
   </label>
+  <input type="text" name="post-title" id="post-title" value="{{singlePost.post_title}}"/>
   <label for="editor">Post Content</label>
   <div name="editor" id="editor">
     {{{singlePost.post_content}}}

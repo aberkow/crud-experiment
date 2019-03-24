@@ -121,12 +121,14 @@ postsRoute.post('/', async (req, res) => {
 postsRoute.put('/:id', async (req, res) => {
 
   const postTitle = req.body.data.postTitle
+  const postName = req.body.data.postName
   const postContent = req.body.data.postContent
   const id = req.params.id
 
   const sql = `
   UPDATE wp_posts
     SET post_title=?,
+    post_name=?,
     post_content=?,
     post_modified=CURRENT_TIMESTAMP,
 	  post_modified_gmt=UTC_TIMESTAMP
@@ -135,7 +137,12 @@ postsRoute.put('/:id', async (req, res) => {
 
   const query = {
     sql,
-    values: [ postTitle, postContent, id ]
+    values: [ 
+      postTitle,
+      postName, 
+      postContent, 
+      id 
+    ]
   }
 
   await queryDB(pool, query)
