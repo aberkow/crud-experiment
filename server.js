@@ -3,10 +3,9 @@ require('dotenv').config()
 const express = require('express');
 const bodyParser = require('body-parser');
 const hbs = require('express-handlebars');
-const axios = require('axios');
 
 const routes = require('./routes/routes');
-const { queryDB } = require('./utils/helpers');
+const { getPosts, getPostByName } = require('./controllers/postsController')
 
 const app = express();
 
@@ -28,30 +27,59 @@ app.use(bodyParser.json())
 // delegate API requests to specific routes
 app.use('/api', routes);
 
-// create a local axios instance just for querying the API
-const instance = axios.create({
-  baseURL: 'http://localhost:3000/api/'
-})
-
 app.get('/', (req, res) => {
   res.render('home', { title: 'Home' })
+})
+
+app.get('/posts', async (req, res) => {
+
+  // prevent people from seeing un-published posts on the public side.
+  req.query.status = 'publish'
+
+  await getPosts(req)
+    .then(data => {
+      res.render('posts', {
+        title: 'Posts',
+        data
+      })
+    })
+    .catch(err => {
+      res.render('posts', {
+        title: 'Posts',
+        err
+      })
+    })
+
+})
+
+app.get('/posts/:name', async (req, res) => {
+  await getPostByName(req)
+    .then(data => {
+      res.render('single', {
+        title: data[0].post_title,
+        singlePost: data[0]
+      })
+    })
+    .catch(err => res.render('single', {
+      title: 'Error',
+      err
+    }))
 })
 
 app.get('/admin', (req, res) => {
   res.render('admin/home', { title: 'Admin' })
 })
 
-app.get('/admin/posts', (req, res) => {
-
-  instance.get('posts')
-    .then(({ data }) => {
-
-      res.render('admin/posts', { 
-        title: 'Posts',
-        data 
-      })
+app.get('/admin/posts', async (req, res) => {
+  await getPosts(req)
+    .then((results) => {
+      console.log(results)
+      
+        res.render('admin/posts', {
+          title: 'posts',
+          data
+        })
     })
-    .catch(err => console.log(err))
 
 })
 

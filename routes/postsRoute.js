@@ -3,6 +3,7 @@ const postsRoute = express.Router();
 
 const pool = require('../utils/pool');
 const { queryDB } = require('../utils/helpers');
+const { getPosts, getPostById } = require('../controllers/postsController')
 
 /**
  * 
@@ -10,51 +11,20 @@ const { queryDB } = require('../utils/helpers');
  * 
  */
 postsRoute.get('/', async (req, res) => {
-  const status = req.query.status || 'publish'
-  const type = req.query.post_type || 'post'
-  const limit = req.query.limit || 10;
-  const page = req.query.page || 1;
-  const offset = (limit + 1) * (page - 1);
-
-  const sql = `
-    SELECT * FROM wp_posts 
-      WHERE post_status LIKE ?
-      AND post_type LIKE ?
-      LIMIT ?
-      OFFSET ?
-  `
-
-  const query = {
-    sql,
-    values: [status, type, limit, offset]
-  }
-
-  
-
-  await queryDB(pool, query)
-    .then(results => res.send(results))
-    .catch(err => {
-      console.log(err);
-      res.send({ error: err })
-    })
+  await getPosts(req)
+    .then(data => res.send(data))
+    .catch(err => res.send({ error: err }))
 })
 
+/**
+ * 
+ * GET a single post by its ID
+ * 
+ */
 postsRoute.get('/:id', async (req, res) => {
-  const id = req.params.id;
-
-  const sql = `
-    SELECT * FROM wp_posts WHERE ID=?;
-  `
-  const values = [ id ]
-
-  const query = { sql, values }
-
-  await queryDB(pool, query)
-    .then(results => res.send(results))
-    .catch(err => {
-      console.log(err);
-      res.send({ error: err })
-    })
+  await getPostById(req)
+    .then(data => res.send(data))
+    .catch(err => res.send({ error: err }))
 })
 
 /**
