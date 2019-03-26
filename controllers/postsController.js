@@ -76,6 +76,13 @@ module.exports = {
       .then(results => results)
       .catch(err => err)
   },
+
+  /**
+   * 
+   * Create a new post when /posts/new is visited
+   * The new post object is returned when Promise.all resolves
+   * 
+   */
   createPost: async (req) => {
     const isSecure = req.secure
     const scheme = isSecure ? 'https' : 'http'
@@ -107,13 +114,13 @@ module.exports = {
       1,
       CURRENT_TIMESTAMP,
       CURRENT_TIMESTAMP,
-      'this is the post content',
-      'Hello World!',
-      'an excerpt',
+      'Have a little content to get started!',
+      'Post ID ',
+      '',
       'auto-draft',
       'closed',
       'closed',
-      'hello-world',
+      '',
       '',
       '',
       CURRENT_TIMESTAMP,
@@ -133,7 +140,7 @@ module.exports = {
 
     const udpateSql = `
       UPDATE wp_posts
-        SET guid=CONCAT(guid, LAST_INSERT_ID())
+        SET guid=CONCAT(guid, LAST_INSERT_ID()), post_title=CONCAT(post_title, LAST_INSERT_ID())
         WHERE ID=LAST_INSERT_ID();
     `
 
@@ -148,11 +155,14 @@ module.exports = {
     const insertPromise = await queryDB(pool, insertQuery);
     const updatePromise = await queryDB(pool, updateQuery);
     const getPromise = await queryDB(pool, getQuery)
-
     return Promise.all([insertPromise, updatePromise, getPromise])
-      // destructure the results of the awaited promises.
-      // this way you just get back the value of the newly inserted post
-      .then(([insertRes, updateRes, getRes]) => getRes)
+    // destructure the results of the awaited promises.
+    // this way you just get back the value of the newly inserted post
+    .then(([insertRes, updateRes, getRes]) => {
+        console.log('hello!');
+        console.log(JSON.stringify(getRes, null, '\t'), 'getRes')
+        return getRes
+      })
       .catch(err => err)
   }
 }
