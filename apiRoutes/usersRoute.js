@@ -6,24 +6,20 @@ const php = require('js-php-serialize')
 const pool = require('../utils/pool')
 const { queryDB } = require('../utils/helpers')
 
+const { getUsers, getUserById } = require('../controllers/usersController')
+
 usersRoute.get('/', async (req, res) => {
-  const sql = `
-  SELECT wp_users.ID, wp_users.user_email, wp_users.display_name, wp_usermeta.meta_key, wp_usermeta.meta_value 
-	FROM wp_users
-		INNER JOIN wp_usermeta ON wp_users.ID = wp_usermeta.user_id
-		WHERE meta_key="wp_capabilities" AND meta_value LIKE "%administrator%"`;
 
-  const query = {
-    sql,
-    values: []
-  }
+  await getUsers(req)
+    .then(data => res.send(data))
+    .catch(err => res.send({ error: err }))
 
-  await queryDB(pool, query)
-    .then(results => res.send(results))
-    .catch(err => {
-      console.log(err);
-      res.send({ error: err })
-    })
+})
+
+usersRoute.get('/:id', async (req, res) => {
+  await getUserById(req)
+    .then(data => res.send(data))
+    .catch(err => res.send({ error: err }))
 })
 
 usersRoute.post('/new', async (req, res) => {

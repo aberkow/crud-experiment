@@ -24,35 +24,45 @@ module.exports = {
       OFFSET ?
     `
     
+    /**
+     * 
+     * Even though the values are escaped, it's useful to encode sepcial characters.
+     * this way if someone enters i
+     * - ?type=pos"t -> "pos%22t"
+     * - ?type='%20or%201=1-- -> "'%20or%201%3D1--"
+     * 
+     */
     const query = {
       sql,
-      values: [status, type, limit, offset]
+      values: [encodeURIComponent(status), encodeURIComponent(type), limit, offset]
     }
 
     return await queryDB(pool, query)
       .then(results => results)
-      .catch(err => {
-        console.log(err);
-        res.send({ error: err })
-      })
+      .catch(err => err)
   },
   getPostByName: async (req) => {
     const name = req.params.name
+    const status = 'publish'
 
     const sql = `
       SELECT * FROM wp_posts WHERE post_name=?
+        AND post_status=?
     `
 
-    const values = [ name ]
+    const values = [ encodeURIComponent(name), status ]
 
     const query = { sql, values }
 
     return await queryDB(pool, query)
       .then(results => results)
-      .catch(err => res.send({ error: err }))
+      .catch(err => err)
   },
   getPostById: async (req) => {
-    const id = req.params.id
+
+    // ids should only ever be integers.
+    // malicious strings will fail automatically
+    const id = parseInt(req.params.id)
 
     const sql = `
       SELECT * FROM wp_posts WHERE ID=?
@@ -64,6 +74,85 @@ module.exports = {
 
     return await queryDB(pool, query)
       .then(results => results)
-      .catch(err => res.send({ error: err }))
+      .catch(err => err)
   },
+  createPost: async (req) => {
+    const isSecure = req.secure
+    const scheme = isSecure ? 'https' : 'http'
+    const host = req.headers.host
+
+    const guid = `${scheme}://${host}?p=`
+
+    const insertSql = `
+    INSERT INTO wp_posts (
+      post_author,
+      post_date,
+      post_date_gmt,
+      post_content,
+      post_title,
+      post_excerpt,
+      post_status,
+      comment_status,
+      ping_status,
+      post_name,
+      to_ping,
+      pinged,
+      post_modified,
+      post_modified_gmt,
+      post_content_filtered,
+      post_parent,
+      guid,
+      post_type
+    ) VALUES (
+      1,
+      CURRENT_TIMESTAMP,
+      CURRENT_TIMESTAMP,
+      'this is the post content',
+      'Hello World!',
+      'an excerpt',
+      'auto-draft',
+      'closed',
+      'closed',
+      'hello-world',
+      '',
+      '',
+      CURRENT_TIMESTAMP,
+      CURRENT_TIMESTAMP,
+      '',
+      0,
+      ?,
+      'post'
+    );
+  `
+    const insertVals = [ guid ]
+
+    const insertQuery = {
+      sql: insertSql,
+      values: insertVals
+    }
+
+    const udpateSql = `
+      UPDATE wp_posts
+        SET guid=CONCAT(guid, LAST_INSERT_ID())
+        WHERE ID=LAST_INSERT_ID();
+    `
+
+    const updateQuery = { sql: udpateSql }
+
+    const getSql = `
+      SELECT * FROM wp_posts WHERE ID=LAST_INSERT_ID()
+    `
+
+    const getQuery = { sql: getSql }
+
+    const insertPromise = await queryDB(pool, insertQuery);
+    const updatePromise = await queryDB(pool, updateQuery);
+    const getPromise = await queryDB(pool, getQuery)
+
+    return Promise.all([insertPromise, updatePromise, getPromise])
+      // destructure the results of the awaited promises.
+      // this way you just get back the value of the newly inserted post
+      .then(([insertRes, updateRes, getRes]) => getRes)
+      .catch(err => err)
+  }
 }

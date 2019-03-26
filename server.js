@@ -4,8 +4,14 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const hbs = require('express-handlebars');
 
-const routes = require('./routes/routes');
-const { getPosts, getPostByName } = require('./controllers/postsController')
+const apiRoutes = require('./apiRoutes/routes');
+const adminRoutes = require('./adminRoutes/routes')
+
+const { 
+  getPosts, 
+  getPostByName, 
+  getPostById 
+} = require('./controllers/postsController')
 
 const app = express();
 
@@ -25,7 +31,10 @@ app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 
 // delegate API requests to specific routes
-app.use('/api', routes);
+app.use('/api', apiRoutes);
+
+// delegate admin requests to specific routes
+app.use('/admin', adminRoutes)
 
 app.get('/', (req, res) => {
   res.render('home', { title: 'Home' })
@@ -52,6 +61,7 @@ app.get('/posts', async (req, res) => {
 
 })
 
+// allow the public side to get posts by the post name
 app.get('/posts/:name', async (req, res) => {
   await getPostByName(req)
     .then(data => {
@@ -64,39 +74,6 @@ app.get('/posts/:name', async (req, res) => {
       title: 'Error',
       err
     }))
-})
-
-app.get('/admin', (req, res) => {
-  res.render('admin/home', { title: 'Admin' })
-})
-
-app.get('/admin/posts', async (req, res) => {
-  await getPosts(req)
-    .then((results) => {
-      console.log(results)
-      
-        res.render('admin/posts', {
-          title: 'posts',
-          data
-        })
-    })
-
-})
-
-app.get('/admin/posts/:id', (req, res) => {
-  instance.get(`posts/${req.params.id}`)
-    .then(({ data }) => {
-      res.render('admin/posts/single', {
-        title: `Posts - ${data[0].post_title}`,
-        singlePost: data[0]
-      })
-    })
-    .catch(err => {
-      res.render('admin/posts/single', {
-        title: `Posts - error`,
-        error: err
-      })
-    })
 })
 
 app.listen(PORT, () => {
