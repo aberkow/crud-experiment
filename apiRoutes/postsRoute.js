@@ -6,7 +6,8 @@ const { queryDB } = require('../utils/helpers');
 const { 
   getPosts, 
   getPostById, 
-  createPost 
+  createPost,
+  deletePostById 
 } = require('../controllers/postsController')
 
 /**
@@ -142,30 +143,11 @@ postsRoute.put('/:id', async (req, res) => {
  * WP "deletes" a post from the db by first setting the status to "trash"
  * 
  */
+
 postsRoute.delete('/:id', async (req, res) => {
-
-  const id = req.params.id;
-
-  const sql = `UPDATE wp_posts 
-    SET post_status="trash" 
-    WHERE ID=?`
-
-  const query = {
-    sql,
-    values: [id]
-  }
-
-  await queryDB(pool, query)
-    .then(data => {
-      res.send({
-        message: 'Post Deleted',
-        data
-      })
-    })
-    .catch(err => {
-      console.log(err);
-      res.send({ error: `error -> ${err}` })
-    })
+  await deletePostById(req)
+    .then(data => res.send({ data }))
+    .catch(err => res.send({ error: err }))
 })
 
 

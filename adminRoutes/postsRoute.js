@@ -3,7 +3,8 @@ const postsRoute = express.Router()
 const {
   getPosts,
   getPostById,
-  createPost
+  createPost,
+  deletePostById
 } = require('../controllers/postsController')
 
 postsRoute.get('/', async (req, res) => {
@@ -40,30 +41,20 @@ postsRoute.get('/:id', async (req, res) => {
     })
 })
 
-postsRoute.get('/new', async (req, res) => {
-
-  // await createPost(req)
-  //   .then(({ data }) => res.send({data}))
-  //   .catch(err => res.send({ error: err }))
-
-
-  // res.render('admin/posts/single', {
-  //   title: 'test',
-  //   // singlePost: {}
-  // })
-  await createPost(req)
-    .then(({ data }) => {
-      console.log(JSON.stringify(data, null, '\t'), 'data')
-      res.render('admin/posts/single', {
-        title: `New Post with ID`,
-        singlePost: data[0]
+postsRoute.delete('/:id', async (req, res) => {
+  await deletePostById(req)
+    .then((data) => {
+      res.send({ 
+        message: 'deleted', 
+        data: {
+          isDeleted: true
+        } 
       })
     })
     .catch(err => {
-      console.log(JSON.stringify(err, null, '\t'), 'err')
-      res.render('admin/posts/single', {
-        title: `New Post Error`,
-        error: err
+      res.send({
+        err, 
+        message: 'There was a problem deleting the post' 
       })
     })
 })

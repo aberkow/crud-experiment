@@ -158,10 +158,53 @@ module.exports = {
     return Promise.all([insertPromise, updatePromise, getPromise])
     // destructure the results of the awaited promises.
     // this way you just get back the value of the newly inserted post
-    .then(([insertRes, updateRes, getRes]) => {
+      .then(([insertRes, updateRes, getRes]) => {
         console.log('hello!');
         console.log(JSON.stringify(getRes, null, '\t'), 'getRes')
         return getRes
+      })
+      .catch(err => err)
+  },
+  deletePostById: async (req) => {
+    let trashSql
+    const id = parseInt(req.params.id)
+    const values = [ id ]
+
+    const statusCheckSql = `
+      SELECT wp_posts.post_status 
+        FROM wp_posts 
+        WHERE wp_posts.ID=?
+    `
+
+    const statusCheckQuery = { 
+      sql: statusCheckSql, 
+      values 
+    }
+
+    const status = await queryDB(pool, statusCheckQuery)
+      .then(res => res[0])
+      .catch(err => err)
+
+    if (status.post_status !== 'trash') {
+      trashSql = `
+        UPDATE wp_posts
+          SET post_status='trash'
+          WHERE wp_posts.ID=?
+      `
+    } else {
+      trashSql = `
+        DELETE FROM wp_posts WHERE ID=?
+      `
+    }
+
+    const query = {
+      sql: trashSql,
+      values
+    }
+
+    await queryDB(pool, query)
+      .then(res => {
+        return res
       })
       .catch(err => err)
   }

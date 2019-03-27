@@ -9,8 +9,7 @@ const adminRoutes = require('./adminRoutes/routes')
 
 const { 
   getPosts, 
-  getPostByName, 
-  getPostById 
+  getPostByName
 } = require('./controllers/postsController')
 
 const app = express();
