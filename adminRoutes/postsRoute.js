@@ -57,6 +57,11 @@ postsRoute.get('/:id', async (req, res) => {
     })
 })
 
+postsRoute.post('/:id', (req, res) => {
+  // 
+  console.log(JSON.stringify(req.body, null, '\t'), 'req.body')
+})
+
 postsRoute.delete('/:id', async (req, res) => {
   await deletePostById(req)
     .then((data) => {

@@ -3,6 +3,7 @@ require('dotenv').config()
 const express = require('express');
 const bodyParser = require('body-parser');
 const hbs = require('express-handlebars');
+const sanitizer = require('express-sanitizer')
 
 const apiRoutes = require('./apiRoutes/routes');
 const adminRoutes = require('./adminRoutes/routes')
@@ -28,6 +29,9 @@ app.set('view engine', 'hbs');
 app.use(express.static('public'))
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
+
+// sanitize incoming html strings just in case.
+app.use(sanitizer())
 
 // delegate API requests to specific routes
 app.use('/api', apiRoutes);

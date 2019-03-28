@@ -17,10 +17,10 @@
   </label>
   <input type="text" name="post-title" id="post-title" value="{{singlePost.post_title}}"/>
   <label for="editor">Post Content</label>
-  <div name="editor" id="editor">
+  <input type="hidden" name="editor">
+  <div id="editor">
     {{{singlePost.post_content}}}
   </div>
-
 
   {{!-- fallbacks --}}
   <noscript>Hmm... Looks like javascript's not available right now. For the best experience, please re-load with javascript. Otherwise feel free to keep posting!</noscript>
