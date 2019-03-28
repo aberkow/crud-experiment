@@ -159,8 +159,6 @@ module.exports = {
     // destructure the results of the awaited promises.
     // this way you just get back the value of the newly inserted post
       .then(([insertRes, updateRes, getRes]) => {
-        console.log('hello!');
-        console.log(JSON.stringify(getRes, null, '\t'), 'getRes')
         return getRes
       })
       .catch(err => err)

@@ -23,6 +23,22 @@ postsRoute.get('/', async (req, res) => {
     })
 })
 
+postsRoute.get('/new', async (req, res) => {
+  await createPost(req)
+    .then((data) => {
+      res.render('admin/posts/single', {
+        title: `Posts - ${data[0].post_title}`,
+        singlePost: data[0]
+      })
+    })
+    .catch(err => {
+      res.render('admin/posts/single', {
+        title: 'Posts - error',
+        error: err
+      })
+    })
+})
+
 // get posts by ID on the admin side
 postsRoute.get('/:id', async (req, res) => {
 

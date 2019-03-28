@@ -32,61 +32,6 @@ postsRoute.get('/:id', async (req, res) => {
     .catch(err => res.send({ error: err }))
 })
 
-/**
- * 
- * add a new post. ID is auto incremented
- * 
- */
-postsRoute.post('/', async (req, res) => {
-  const qs = `INSERT INTO wp_posts (
-	post_author,
-	post_date,
-	post_date_gmt,
-	post_content,
-	post_title,
-	post_excerpt,
-	post_status,
-	comment_status,
-	ping_status,
-	post_name,
-	to_ping,
-	pinged,
-	post_modified,
-	post_modified_gmt,
-	post_content_filtered,
-	post_parent,
-	post_type
-) VALUES (
-	1,
-	CURRENT_TIMESTAMP,
-	UTC_TIMESTAMP,
-	'this is the post content',
-	'Hello World!',
-	'an excerpt',
-	'publish',
-	'closed',
-	'closed',
-	'hello-world',
-	'',
-	'',
-	CURRENT_TIMESTAMP,
-	UTC_TIMESTAMP,
-	'',
-	0,
-	'post'
-);`
-  await queryDB(pool, qs)
-    .then(data => {
-      res.send({
-        message: 'New Post Added',
-        data
-      })
-    })
-    .catch(err => {
-      console.log(err);
-      res.send({ error: `error -> ${err}` })
-    })
-})
 
 /**
  * 
