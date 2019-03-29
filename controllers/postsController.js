@@ -1,5 +1,5 @@
 const pool = require('../utils/pool');
-const { queryDB } = require('../utils/helpers');
+const { queryDB, getUniquePostWhere } = require('../utils/helpers');
 
 /** 
  * 
@@ -207,84 +207,70 @@ module.exports = {
       .catch(err => err)
   },
   updatePost: async (req) => {
-
-    // console.log(JSON.stringify(req.body, null, '\t'), 'req.body')
-
-
+    // get a unique value for the post.
+    // it will either be an ID or unique slug
     const unique = parseInt(req.params.id) || req.params.name
-    // console.log(JSON.stringify(unique, null, '\t'), 'unique')
-    let post;
+
     const values = []
 
-    if (req.params.id) {
-      post = await module.exports.getPostById(req)
-    } else if (req.params.name) {
-      post = await module.exports.getPostByName(req)
-    }
-
+    // compose an update query
     let updateSql = `
       UPDATE wp_posts SET 
     `
     
     if (req.body.postStatus) {
-      updateSql += `post_status=?`
+      updateSql += ` post_status=?,`
       values.push(req.body.postStatus)
     }
     
     if (req.body.postTitle) {
-      updateSql += `post_title=?`
+      updateSql += ` post_title=?,`
       values.push(req.body.postTitle)
     }
     
     if (req.body.postContent) {
-      updateSql += `post_content=?`
+      updateSql += ` post_content=?,`
       values.push(req.body.postContent)
     }
     
     if (req.body.postName) {
-      updateSql += `post_name=?`
+      updateSql += ` post_name=?,`
       values.push(req.body.postName)
     }
     
-    // console.log(JSON.stringify(updateSql, null, '\t'), 'updateSql')
+    updateSql += getUniquePostWhere(unique)
 
+    values.push(unique)  
 
-    if (typeof(unique) === "number") {
-      updateSql += `
-        WHERE wp_posts.ID=?
-      `
-    } else if (typeof(unique) === "string") {
-      updateSql += `
-        WHERE wp_posts.post_name=?
-      `
-    }
-
-    values.push(unique)
-
+    // compose the update query
     const updateQuery = {
       sql: updateSql,
       values
     }
 
-    const getSql = `
-      SELECT * FROM wp_posts WHERE wp_posts.ID=? OR wp_posts.post_name=?
+    console.log(JSON.stringify(updateQuery, null, '\t'), 'updateQuery')
+    // return the updated post
+
+    // compose the SELECT query
+    let getSql = `
+      SELECT * FROM wp_posts 
     `
+
+    getSql += getUniquePostWhere(unique)
+
+    getSql += ` AND post_status="publish"`
 
     const getValue = [ unique ]
 
     const getQuery = { sql: getSql, values: getValue }
 
-    const updatePromise = await queryDB(pool, updateQuery)   
+    // create the promises for the UPDATE and SELECT
+    const updatePromise = await queryDB(pool, updateQuery) 
     const getPromise = await queryDB(pool, getQuery)
-
+    
+    // return the updated post by returning the value of the getPromise
     return Promise.all([updatePromise, getPromise])
-      .then(([updateRes, getRes]) => {
-        console.log(JSON.stringify(getRes, null, '\t'), 'getRes')
-        return getRes
-      })
-      .catch(err => {
-        console.log(JSON.stringify(err, null, '\t'), 'err from controller')
-        return err
-      })
+      .then(([updateRes, getRes]) => getRes)
+      .catch(err => err)
   }
 }

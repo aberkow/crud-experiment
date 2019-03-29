@@ -23,4 +23,21 @@ module.exports = {
       throw new Error(`queryDB error -> ${error}`)
     }
   },
+  getUniquePostWhere: (unique) => {
+    let where
+
+    if (typeof (unique) === "number") {
+      where = `
+        WHERE wp_posts.ID=?
+      `
+    } else if (typeof (unique) === "string") {
+      where = `
+        WHERE wp_posts.post_name=?
+      `
+    } else {
+      throw new Error(`Where needs to be a string or number. You passed in a ${typeof(unique)}`)
+    }
+
+    return where;
+  }
 }
