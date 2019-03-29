@@ -210,7 +210,7 @@ module.exports = {
     // get a unique value for the post.
     // it will either be an ID or unique slug
     const unique = parseInt(req.params.id) || req.params.name
-
+    const updates = [];
     const values = []
 
     // compose an update query
@@ -218,26 +218,33 @@ module.exports = {
       UPDATE wp_posts SET 
     `
     
+    // this should all probably be a for...in loop somehow...
     if (req.body.postStatus) {
-      updateSql += ` post_status=?,`
+      // updateSql += ` post_status=?,`
+      updates.push(`post_status=?`)
       values.push(req.body.postStatus)
     }
     
     if (req.body.postTitle) {
-      updateSql += ` post_title=?,`
+      // updateSql += ` post_title=?,`
+      updates.push(`post_title=?`)
       values.push(req.body.postTitle)
     }
     
     if (req.body.postContent) {
-      updateSql += ` post_content=?,`
+      // updateSql += ` post_content=?,`
+      updates.push(`post_content=?`)
       values.push(req.body.postContent)
     }
     
     if (req.body.postName) {
-      updateSql += ` post_name=?,`
+      // updateSql += ` post_name=?,`
+      updates.push(`post_name=?`)
       values.push(req.body.postName)
     }
     
+    updateSql += updates.join(', ')
+
     updateSql += getUniquePostWhere(unique)
 
     values.push(unique)  

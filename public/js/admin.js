@@ -21,9 +21,9 @@ form.addEventListener('submit', async (evt) => {
   evt.preventDefault()
 
   const id = form.getAttribute('data-postID')
-  const postTitle = document.querySelector('#post-title').value
-  const postName = postTitle.toLowerCase().split(' ').join('-')
-  const postContent = document.querySelector('[name=editor]').value
+  const post_title = document.querySelector('#post-title').value
+  const post_name = post_title.toLowerCase().split(' ').join('-')
+  const post_content = document.querySelector('[name=editor]').value
 
   await fetch(`/admin/posts/${id}`, {
     method: 'POST',
@@ -33,9 +33,9 @@ form.addEventListener('submit', async (evt) => {
     },
     body: JSON.stringify({
       data: {
-        postTitle,
-        postName,
-        postContent
+        post_title,
+        post_name,
+        post_content
       }
     })
   })
