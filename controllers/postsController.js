@@ -261,21 +261,30 @@ module.exports = {
 
     values.push(unique)
 
-    const query = {
+    const updateQuery = {
       sql: updateSql,
       values
     }
-    // console.log(JSON.stringify(values, null, '\t'), 'values')
-    // console.log(JSON.stringify(query, null, '\t'), 'query')
-    
-    await queryDB(pool, query)
-      .then(res => {
-        console.log(JSON.stringify(post, null, '\t'), 'res')
-        return post
+
+    const getSql = `
+      SELECT * FROM wp_posts WHERE wp_posts.ID=? OR wp_posts.post_name=?
+    `
+
+    const getValue = [ unique ]
+
+    const getQuery = { sql: getSql, values: getValue }
+
+    const updatePromise = await queryDB(pool, updateQuery)   
+    const getPromise = await queryDB(pool, getQuery)
+
+    return Promise.all([updatePromise, getPromise])
+      .then(([updateRes, getRes]) => {
+        console.log(JSON.stringify(getRes, null, '\t'), 'getRes')
+        return getRes
       })
-      .catch(err => err)
-
-    
-
+      .catch(err => {
+        console.log(JSON.stringify(err, null, '\t'), 'err from controller')
+        return err
+      })
   }
 }

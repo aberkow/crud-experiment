@@ -98,6 +98,7 @@ postsRoute.delete('/:id', async (req, res) => {
 
 
 postsRoute.put('/:id', async (req, res) => {
+  console.log(JSON.stringify(req.params, null, '\t'), 'req.body')
   await updatePost(req)
     .then(data => {
       console.log(JSON.stringify(data, null, '\t'), 'data from route...')
