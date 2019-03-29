@@ -83,7 +83,7 @@ module.exports = {
    * The new post object is returned when Promise.all resolves
    * 
    */
-  createPost: async (req) => {
+  createNewPost: async (req) => {
     const isSecure = req.secure
     const scheme = isSecure ? 'https' : 'http'
     const host = req.headers.host
@@ -205,5 +205,77 @@ module.exports = {
         return res
       })
       .catch(err => err)
+  },
+  updatePost: async (req) => {
+
+    // console.log(JSON.stringify(req.body, null, '\t'), 'req.body')
+
+
+    const unique = parseInt(req.params.id) || req.params.name
+    // console.log(JSON.stringify(unique, null, '\t'), 'unique')
+    let post;
+    const values = []
+
+    if (req.params.id) {
+      post = await module.exports.getPostById(req)
+    } else if (req.params.name) {
+      post = await module.exports.getPostByName(req)
+    }
+
+    let updateSql = `
+      UPDATE wp_posts SET 
+    `
+    
+    if (req.body.postStatus) {
+      updateSql += `post_status=?`
+      values.push(req.body.postStatus)
+    }
+    
+    if (req.body.postTitle) {
+      updateSql += `post_title=?`
+      values.push(req.body.postTitle)
+    }
+    
+    if (req.body.postContent) {
+      updateSql += `post_content=?`
+      values.push(req.body.postContent)
+    }
+    
+    if (req.body.postName) {
+      updateSql += `post_name=?`
+      values.push(req.body.postName)
+    }
+    
+    // console.log(JSON.stringify(updateSql, null, '\t'), 'updateSql')
+
+
+    if (typeof(unique) === "number") {
+      updateSql += `
+        WHERE wp_posts.ID=?
+      `
+    } else if (typeof(unique) === "string") {
+      updateSql += `
+        WHERE wp_posts.post_name=?
+      `
+    }
+
+    values.push(unique)
+
+    const query = {
+      sql: updateSql,
+      values
+    }
+    // console.log(JSON.stringify(values, null, '\t'), 'values')
+    // console.log(JSON.stringify(query, null, '\t'), 'query')
+    
+    await queryDB(pool, query)
+      .then(res => {
+        console.log(JSON.stringify(post, null, '\t'), 'res')
+        return post
+      })
+      .catch(err => err)
+
+    
+
   }
 }

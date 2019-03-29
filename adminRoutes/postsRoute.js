@@ -3,7 +3,7 @@ const postsRoute = express.Router()
 const {
   getPosts,
   getPostById,
-  createPost,
+  createNewPost,
   deletePostById
 } = require('../controllers/postsController')
 
@@ -24,7 +24,7 @@ postsRoute.get('/', async (req, res) => {
 })
 
 postsRoute.get('/new', async (req, res) => {
-  await createPost(req)
+  await createNewPost(req)
     .then((data) => {
       res.render('admin/posts/single', {
         title: `Posts - ${data[0].post_title}`,
@@ -60,6 +60,9 @@ postsRoute.get('/:id', async (req, res) => {
 postsRoute.post('/:id', (req, res) => {
   // 
   console.log(JSON.stringify(req.body, null, '\t'), 'req.body')
+
+  
+
 })
 
 postsRoute.delete('/:id', async (req, res) => {

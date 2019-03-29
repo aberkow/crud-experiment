@@ -40,7 +40,7 @@ form.addEventListener('submit', async (evt) => {
     })
   })
   .then(res => {
-
+    console.log(res);
     const message = document.querySelector('.message')
 
     if (!res.ok) {
