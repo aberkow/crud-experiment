@@ -4,7 +4,8 @@ const {
   getPosts,
   getPostById,
   createNewPost,
-  deletePostById
+  deletePostById,
+  updatePost
 } = require('../controllers/postsController')
 
 postsRoute.get('/', async (req, res) => {
@@ -61,7 +62,12 @@ postsRoute.post('/:id', (req, res) => {
   // 
   console.log(JSON.stringify(req.body, null, '\t'), 'req.body')
 
-  
+  // untested...
+  await updatePost(req)
+    .then((data) => {
+      res.send({ data })
+    })
+    .catch(err => err)
 
 })
 
