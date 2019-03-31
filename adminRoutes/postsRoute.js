@@ -58,7 +58,7 @@ postsRoute.get('/:id', async (req, res) => {
     })
 })
 
-postsRoute.post('/:id', (req, res) => {
+postsRoute.post('/:id', async (req, res) => {
   // 
   console.log(JSON.stringify(req.body, null, '\t'), 'req.body')
 
