@@ -73,7 +73,7 @@ module.exports = {
     const query = { sql, values }
 
     return await queryDB(pool, query)
-      .then(results => results)
+      .then(results => results[0])
       .catch(err => err)
   },
 
@@ -218,31 +218,17 @@ module.exports = {
       UPDATE wp_posts SET 
     `
     
-    // this should all probably be a for...in loop somehow...
-    if (req.body.postStatus) {
-      // updateSql += ` post_status=?,`
-      updates.push(`post_status=?`)
-      values.push(req.body.postStatus)
+    // loop over the properties in req.body to prepare the updates
+    for (const prop in req.body) {
+      // don't allow updating the ID by accident
+      if (prop.toLowerCase() === 'id') continue;
+
+      // push properties and values into their arrays
+      updates.push(`${prop}=?`)
+      values.push(req.body[prop])
     }
     
-    if (req.body.postTitle) {
-      // updateSql += ` post_title=?,`
-      updates.push(`post_title=?`)
-      values.push(req.body.postTitle)
-    }
-    
-    if (req.body.postContent) {
-      // updateSql += ` post_content=?,`
-      updates.push(`post_content=?`)
-      values.push(req.body.postContent)
-    }
-    
-    if (req.body.postName) {
-      // updateSql += ` post_name=?,`
-      updates.push(`post_name=?`)
-      values.push(req.body.postName)
-    }
-    
+    // join the parts of the update together
     updateSql += updates.join(', ')
 
     updateSql += getUniquePostWhere(unique)
@@ -255,7 +241,6 @@ module.exports = {
       values
     }
 
-    console.log(JSON.stringify(updateQuery, null, '\t'), 'updateQuery')
     // return the updated post
 
     // compose the SELECT query
