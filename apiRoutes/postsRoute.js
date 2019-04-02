@@ -8,7 +8,8 @@ const {
   getPostById, 
   createNewPost,
   deletePostById ,
-  updatePost
+  updatePost,
+  duplicatePost
 } = require('../controllers/postsController')
 
 /**

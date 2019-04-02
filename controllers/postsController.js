@@ -1,5 +1,9 @@
 const pool = require('../utils/pool');
-const { queryDB, getUniquePostWhere } = require('../utils/helpers');
+const { 
+  queryDB, 
+  getUniquePostWhere, 
+  getHost 
+} = require('../utils/helpers');
 
 /** 
  * 
@@ -84,11 +88,8 @@ module.exports = {
    * 
    */
   createNewPost: async (req) => {
-    const isSecure = req.secure
-    const scheme = isSecure ? 'https' : 'http'
-    const host = req.headers.host
 
-    const guid = `${scheme}://${host}?p=`
+    const guid = `${getHost(req)}?p=`
 
     const insertSql = `
     INSERT INTO wp_posts (
@@ -212,7 +213,8 @@ module.exports = {
     const unique = parseInt(req.params.id) || req.params.name
     const updates = [];
     const values = []
-
+    const date = new Date()
+    // console.log(JSON.stringify(unique, null, '\t'), 'req.body')
     // compose an update query
     let updateSql = `
       UPDATE wp_posts SET 
@@ -255,14 +257,91 @@ module.exports = {
     const getValue = [ unique ]
 
     const getQuery = { sql: getSql, values: getValue }
-
-    // create the promises for the UPDATE and SELECT
+    // create the promises for the UPDATE, duplicate, and SELECT
     const updatePromise = await queryDB(pool, updateQuery) 
+    const duplicatePromise = await module.exports.duplicatePost(req)
     const getPromise = await queryDB(pool, getQuery)
     
     // return the updated post by returning the value of the getPromise
-    return Promise.all([updatePromise, getPromise])
-      .then(([updateRes, getRes]) => getRes)
+    return Promise.all([updatePromise, duplicatePromise, getPromise])
+      .then(([updateRes, duplicateRes, getRes]) => getRes)
       .catch(err => err)
+  },
+  /**
+   * 
+   * Duplicate a post by inserting a new row and modifying some values.
+   * This mimics WP behavior of creating post revisions when a post is updated.
+   * 
+   */
+  duplicatePost: async (req) => {
+    const unique = parseInt(req.params.id) || req.params.name
+    const date = new Date()
+    const guid = `${getHost(req)}/${date.getFullYear()}/${date.getMonth()}/${date.getDate()}/${unique}-revision-v1`
+    const values = [
+      unique,
+      unique,
+      guid,
+      unique
+    ]
+
+    const sql = `
+      INSERT INTO wp_posts
+      (
+        post_author, 
+        post_date,
+        post_date_gmt,
+        post_content,
+        post_title,
+        post_excerpt,
+        post_status,
+        comment_status,
+        ping_status,
+        post_password,
+        post_name,
+        to_ping,
+        pinged,
+        post_modified,
+        post_modified_gmt,
+        post_content_filtered,
+        post_parent,
+        guid,
+        menu_order,
+        post_type,
+        post_mime_type,
+        comment_count
+      )
+      SELECT post_author, 
+        post_date,
+        post_date_gmt,
+        post_content,
+        post_title,
+        post_excerpt,
+        "inherit",
+        "closed",
+        "closed",
+        post_password,
+        "?-revision-1",
+        to_ping,
+        pinged,
+        post_modified,
+        post_modified_gmt,
+        post_content_filtered,
+        ?,
+        ?,
+        menu_order,
+        "revision",
+        post_mime_type,
+        comment_count FROM wp_posts
+      WHERE wp_posts.ID = ?;
+    `
+
+    const query = { sql, values }
+
+    await queryDB(pool, query)
+      .then(res => res)
+      .catch(err => {
+        console.log(JSON.stringify(err, Object.getOwnPropertyNames(err), '\t'), 'err')
+        return err
+      })
   }
 }

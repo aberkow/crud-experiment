@@ -20,7 +20,23 @@ module.exports = {
       result = await pool.query(queryObj)
       return result;
     } catch (error) {
-      throw new Error(`queryDB error -> ${error}`)
+      return error
+    }
+  },
+  /**
+   * 
+   * Get the current host with http scheme
+   * 
+   */
+  getHost: (req) => {
+    try {
+      const isSecure = req.secure
+      const scheme = isSecure ? 'https' : 'http'
+      const host = req.headers.host
+  
+      return `${scheme}://${host}`
+    } catch (err) {
+      console.log(JSON.stringify(err, Object.getOwnPropertyNames(err), '\t'), 'err -> did you pass the request object?')
     }
   },
   getUniquePostWhere: (unique) => {
@@ -35,9 +51,9 @@ module.exports = {
         WHERE wp_posts.post_name=?
       `
     } else {
-      throw new Error(`Where needs to be a string or number. You passed in a ${typeof(unique)}`)
+      console.log(`Where needs to be a string or number. You passed in a ${typeof(unique)}`)
     }
 
     return where;
-  }
+  },
 }
