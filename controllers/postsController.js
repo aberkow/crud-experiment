@@ -1,7 +1,6 @@
 const pool = require('../utils/pool');
 const { 
   queryDB, 
-  getUniquePostWhere, 
   getHost 
 } = require('../utils/helpers');
 
@@ -208,13 +207,11 @@ module.exports = {
       .catch(err => err)
   },
   updatePost: async (req) => {
-    // get a unique value for the post.
-    // it will either be an ID or unique slug
-    const unique = parseInt(req.params.id) || req.params.name
+
+    const id = parseInt(req.params.id)
     const updates = [];
     const values = []
-    const date = new Date()
-    // console.log(JSON.stringify(unique, null, '\t'), 'req.body')
+
     // compose an update query
     let updateSql = `
       UPDATE wp_posts SET 
@@ -233,9 +230,9 @@ module.exports = {
     // join the parts of the update together
     updateSql += updates.join(', ')
 
-    updateSql += getUniquePostWhere(unique)
+    updateSql += `WHERE wp_posts.ID=?`
 
-    values.push(unique)  
+    values.push(id, id)  
 
     // compose the update query
     const updateQuery = {
@@ -250,13 +247,14 @@ module.exports = {
       SELECT * FROM wp_posts 
     `
 
-    getSql += getUniquePostWhere(unique)
+    getSql += `WHERE wp_posts.ID=?`
 
     getSql += ` AND post_status="publish"`
 
-    const getValue = [ unique ]
+    const getValue = [ id ]
 
     const getQuery = { sql: getSql, values: getValue }
+
     // create the promises for the UPDATE, duplicate, and SELECT
     const updatePromise = await queryDB(pool, updateQuery) 
     const duplicatePromise = await module.exports.duplicatePost(req)
@@ -274,16 +272,25 @@ module.exports = {
    * 
    */
   duplicatePost: async (req) => {
-    const unique = parseInt(req.params.id) || req.params.name
+    const id = parseInt(req.params.id)
     const date = new Date()
-    const guid = `${getHost(req)}/${date.getFullYear()}/${date.getMonth()}/${date.getDate()}/${unique}-revision-v1`
+    const guid = `${getHost(req)}/${date.getFullYear()}/${date.getMonth()}/${date.getDate()}/${id}-revision-v1`
     const values = [
-      unique,
-      unique,
+      id,
+      id,
       guid,
-      unique
+      id
     ]
-
+    /**
+     * 
+     * This differs from the way posts are created.
+     * In that case, you need to create the post first so it has an ID
+     * Then you can update the row immediately after with references to that ID
+     * Here you create the new row by INSERTing it 
+     * the VALUES are brought in from the SELECT statement
+     * they can be modified as needed directly in the SELECT
+     * 
+     */
     const sql = `
       INSERT INTO wp_posts
       (
