@@ -200,7 +200,7 @@ module.exports = {
       values
     }
 
-    await queryDB(pool, query)
+    return await queryDB(pool, query)
       .then(res => {
         return res
       })
@@ -215,6 +215,8 @@ module.exports = {
     // compose an update query
     let updateSql = `
       UPDATE wp_posts SET 
+        post_modified=CURRENT_TIMESTAMP,
+        post_modified_gmt=CURRENT_TIMESTAMP,
     `
     
     // loop over the properties in req.body to prepare the updates
@@ -244,12 +246,8 @@ module.exports = {
 
     // compose the SELECT query
     let getSql = `
-      SELECT * FROM wp_posts 
+      SELECT * FROM wp_posts WHERE wp_posts.ID=?
     `
-
-    getSql += `WHERE wp_posts.ID=?`
-
-    getSql += ` AND post_status="publish"`
 
     const getValue = [ id ]
 
@@ -330,8 +328,8 @@ module.exports = {
         "?-revision-1",
         to_ping,
         pinged,
-        post_modified,
-        post_modified_gmt,
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP,
         post_content_filtered,
         ?,
         ?,
