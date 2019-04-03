@@ -8,6 +8,11 @@ const {
   createPostFeaturedImage
  } = require('../controllers/imagesController')
 
+ /**
+  * 
+  * Get a featured image by its parent post's ID
+  * 
+  */
 imagesRoute.get('/:id', async (req, res) => {
   await getPostFeaturedImageByID(req)
     .then(data => {
@@ -20,6 +25,11 @@ imagesRoute.get('/:id', async (req, res) => {
     })
 })
 
+/**
+ * 
+ * Attach a featured image to a parent post by the parent's ID
+ * 
+ */
 imagesRoute.post('/:id', upload.single('attachment'), async (req, res) => {
   await createPostFeaturedImage(req)
     .then(data => {

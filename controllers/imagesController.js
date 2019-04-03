@@ -1,7 +1,8 @@
 const pool = require('../utils/pool');
 const {
   queryDB,
-  getHost
+  getHost,
+  getPostDbColumns
 } = require('../utils/helpers');
 
 module.exports = {
@@ -44,6 +45,14 @@ module.exports = {
         return err
       })
   },
+  /**
+   * 
+   * Creates a row in the wp_posts table for an image.
+   * Requires that an image be uploaded via multer (see /utils/upload)
+   * 
+   * The id passed with the request is the parent post for the featured image.
+   * 
+   */
   createPostFeaturedImage: async (req) => {
     const id = parseInt(req.params.id)
     const { mimetype, originalname } = req.file
@@ -53,25 +62,7 @@ module.exports = {
 
     const insertSql = `
       INSERT INTO wp_posts (
-        post_author,
-        post_date,
-        post_date_gmt,
-        post_content,
-        post_title,
-        post_excerpt,
-        post_status,
-        comment_status,
-        ping_status,
-        post_name,
-        to_ping,
-        pinged,
-        post_modified,
-        post_modified_gmt,
-        post_content_filtered,
-        post_parent,
-        guid,
-        post_type,
-        post_mime_type
+        ${getPostDbColumns()}
       ) VALUES (
         1,
         CURRENT_TIMESTAMP,
@@ -85,13 +76,15 @@ module.exports = {
         '',
         '',
         '',
+        '',
         CURRENT_TIMESTAMP,
         CURRENT_TIMESTAMP,
         '',
         ?,
         ?,
         'attachment',
-        ?
+        ?,
+        0
       )
     `
 
