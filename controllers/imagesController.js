@@ -24,12 +24,28 @@ module.exports = {
         AND post_id=?
       )
       `
-      const query = { sql, values }
+    const query = { sql, values }
+
     return await queryDB(pool, query)
-      .then(res => res)
+      .then(res => {
+        if (res.length > 0) {
+          res.found = true
+          return res
+        } else {
+          return {
+            found: false, 
+            message: `no image found for image with id ${id}.`
+          }
+        }
+      })
       .catch(err => {
         console.log(JSON.stringify(err, Object.getOwnPropertyNames(err), '\t'), 'err')
         return err
       })
+  },
+  createPostFeaturedImage: async (req) => {
+    const id = parseInt(req.params.id)
+
+    console.log(req.body);
   }
 }
