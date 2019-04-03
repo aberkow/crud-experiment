@@ -9,8 +9,16 @@ const storage = multer.diskStorage({
   }
 })
 
+const fileFilter = (req, file, cb) => {
+  if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
+    return cb(new Error('Only image files are allowed'))
+  }
+  cb(null, true)
+}
+
 const upload = multer({ 
-  storage
+  storage,
+  fileFilter
  })
 
 module.exports = upload;
