@@ -20,9 +20,7 @@ imagesRoute.get('/:id', async (req, res) => {
     })
 })
 
-imagesRoute.post('/:id', upload.single('image'), async (req, res) => {
-  const { file, body } = req
-  console.log({ file, body }, 'req???');
+imagesRoute.post('/:id', upload.single('attachment'), async (req, res) => {
   await createPostFeaturedImage(req)
     .then(data => {
       console.log(data);
