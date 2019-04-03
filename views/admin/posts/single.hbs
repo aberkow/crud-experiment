@@ -1,0 +1,31 @@
+<h1>
+  {{singlePost.post_title}}
+</h1>
+<div class="meta">
+  <p><a href="/posts/{{singlePost.post_name}}">/{{singlePost.post_name}}</a></p>
+</div>
+<div class="notification">
+  <p class="message"></p>
+</div>
+<form id="{{singlePost.post_type}}-form" 
+  method="POST" 
+  action="/admin/posts/{{singlePost.ID}}"
+  data-postID="{{singlePost.ID}}">
+{{!-- use triple braces for non-escaped value --}}
+  <label for="post-title">
+    Title:
+  </label>
+  <input type="text" name="post-title" id="post-title" value="{{singlePost.post_title}}"/>
+  <label for="editor">Post Content</label>
+  <input type="hidden" name="editor">
+  <div id="editor">
+    {{{singlePost.post_content}}}
+  </div>
+
+  {{!-- fallbacks --}}
+  <noscript>Hmm... Looks like javascript's not available right now. For the best experience, please re-load with javascript. Otherwise feel free to keep posting!</noscript>
+  <textarea name="fallback-editor" id="fallback-editor" cols="30" rows="10">{{{singlePost.post_content}}}</textarea>
+
+  {{!-- post input --}}
+  <input type="submit" value="Post">
+</form>

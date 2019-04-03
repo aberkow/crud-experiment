@@ -52,3 +52,21 @@ INSERT INTO wp_posts (
 );
 ```
 
+```
+--- insert the post
+INSERT INTO wp_posts (
+	--- other params
+	guid
+) VALUES (
+	--- other vals
+	'http://test.com?p='
+);
+
+--- immediately change the guid
+UPDATE wp_posts
+	SET guid=CONCAT(guid, LAST_INSERT_ID())
+	WHERE ID=LAST_INSERT_ID();
+
+--- show that it's updated
+SELECT guid FROM wp_posts WHERE ID=LAST_INSERT_ID();
+```
