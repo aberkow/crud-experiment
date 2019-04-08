@@ -57,10 +57,17 @@ module.exports = {
    */
   createPostFeaturedImage: async (req) => {
     const id = parseInt(req.params.id)
-    const { mimetype, originalname } = req.file
+    const { mimetype, filename } = req.file
     const imageTitle = req.body.post_title
-    const guid = `${getHost(req)}/public/uploads/${originalname}`
-    const postName = originalname.split('.')[0]
+    const guid = `${getHost(req)}/public/uploads/${filename}`
+    const tempName = filename.split('.')[0].split(' ')
+    let postName
+
+    if (tempName.length > 1) {
+      postName = tempName.join('-').toLowerCase()
+    } else {
+      postName = tempName.toLowerCase()
+    }
 
     const insertSql = `
       INSERT INTO wp_posts (
@@ -76,7 +83,7 @@ module.exports = {
         'closed', 
         'closed', 
         '', 
-        '', 
+        ?, 
         '', 
         '',
         CURRENT_TIMESTAMP,
@@ -91,7 +98,7 @@ module.exports = {
       )
     `
 
-    const insertValues = [ imageTitle, id, guid, mimetype ]
+    const insertValues = [ imageTitle, postName, id, guid, mimetype ]
 
     const insertQuery = { sql: insertSql, values: insertValues }
 
