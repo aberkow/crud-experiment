@@ -1,3 +1,5 @@
+const fs = require('fs')
+
 const pool = require('../utils/pool');
 const {
   queryDB,
@@ -58,30 +60,31 @@ module.exports = {
     const { mimetype, originalname } = req.file
     const imageTitle = req.body.post_title
     const guid = `${getHost(req)}/public/uploads/${originalname}`
-    console.log(file.originalname);
+    const postName = originalname.split('.')[0]
 
     const insertSql = `
       INSERT INTO wp_posts (
         ${getPostDbColumns()}
       ) VALUES (
-        1,
+        1, 
+        CURRENT_TIMESTAMP, 
+        CURRENT_TIMESTAMP, 
+        '', 
+        ?, 
+        '', 
+        'inherit', 
+        'closed', 
+        'closed', 
+        '', 
+        '', 
+        '', 
+        '',
         CURRENT_TIMESTAMP,
         CURRENT_TIMESTAMP,
         '',
         ?,
-        '',
-        'inherit',
-        'closed',
-        'closed',
-        '',
-        '',
-        '',
-        '',
-        CURRENT_TIMESTAMP,
-        CURRENT_TIMESTAMP,
-        '',
         ?,
-        ?,
+        0,
         'attachment',
         ?,
         0
