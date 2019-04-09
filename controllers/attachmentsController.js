@@ -1,5 +1,3 @@
-const fs = require('fs')
-
 const pool = require('../utils/pool');
 const {
   queryDB,
@@ -8,6 +6,8 @@ const {
 } = require('../utils/helpers');
 
 module.exports = {
+
+
   /**
    * 
    * gets a posts featured image by the ID of the post

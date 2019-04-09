@@ -38,7 +38,12 @@ module.exports = {
      */
     const query = {
       sql,
-      values: [encodeURIComponent(status), encodeURIComponent(type), limit, offset]
+      values: [
+        encodeURIComponent(status), 
+        encodeURIComponent(type), 
+        limit, 
+        offset
+      ]
     }
 
     return await queryDB(pool, query)
