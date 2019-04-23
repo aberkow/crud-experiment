@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const imagesRoute = require('./imagesRoute')
+const attachmentsRoute = require('./attachmentsRoute')
 const postsRoute = require('./postsRoute');
 const usersRoute = require('./usersRoute');
 
@@ -10,7 +10,7 @@ router.get('/', (req, res) => {
 })
 
 // routes under /api/posts
-router.use('/images', imagesRoute)
+router.use('/attachments', attachmentsRoute)
 router.use('/posts', postsRoute)
 router.use('/users', usersRoute)
 

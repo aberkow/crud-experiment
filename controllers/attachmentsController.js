@@ -1,10 +1,13 @@
 const pool = require('../utils/pool');
 const {
   queryDB,
-  getHost
+  getHost,
+  getPostDbColumns
 } = require('../utils/helpers');
 
 module.exports = {
+
+
   /**
    * 
    * gets a posts featured image by the ID of the post
@@ -44,71 +47,97 @@ module.exports = {
         return err
       })
   },
+  /**
+   * 
+   * Creates a row in the wp_posts table for an attachment.
+   * Requires that an attachment be uploaded via multer (see /utils/upload)
+   * 
+   * The id passed with the request is the parent post for the featured image.
+   * 
+   */
   createPostFeaturedImage: async (req) => {
     const id = parseInt(req.params.id)
-    const { mimetype, originalname } = req.file
+    const { mimetype, filename } = req.file
     const imageTitle = req.body.post_title
-    const guid = `${getHost(req)}/public/uploads/${originalname}`
-    console.log(file.originalname);
+    const guid = `${getHost(req)}/public/uploads/${filename}`
+    const tempName = filename.split('.')[0].split(' ')
+    let postName
+
+    if (tempName.length > 1) {
+      postName = tempName.join('-').toLowerCase()
+    } else {
+      postName = tempName[0].toLowerCase()
+    }
 
     const insertSql = `
       INSERT INTO wp_posts (
-        post_author,
-        post_date,
-        post_date_gmt,
-        post_content,
-        post_title,
-        post_excerpt,
-        post_status,
-        comment_status,
-        ping_status,
-        post_name,
-        to_ping,
-        pinged,
-        post_modified,
-        post_modified_gmt,
-        post_content_filtered,
-        post_parent,
-        guid,
-        post_type,
-        post_mime_type
+        ${getPostDbColumns()}
       ) VALUES (
-        1,
+        1, 
+        CURRENT_TIMESTAMP, 
+        CURRENT_TIMESTAMP, 
+        '', 
+        ?, 
+        '', 
+        'inherit', 
+        'closed', 
+        'closed', 
+        '', 
+        ?, 
+        '', 
+        '',
         CURRENT_TIMESTAMP,
         CURRENT_TIMESTAMP,
         '',
         ?,
-        '',
-        'inherit',
-        'closed',
-        'closed',
-        '',
-        '',
-        '',
-        CURRENT_TIMESTAMP,
-        CURRENT_TIMESTAMP,
-        '',
         ?,
-        ?,
+        0,
         'attachment',
-        ?
+        ?,
+        0
       )
     `
 
-    const insertValues = [ imageTitle, id, guid, mimetype ]
+    const insertValues = [ imageTitle, postName, id, guid, mimetype ]
 
     const insertQuery = { sql: insertSql, values: insertValues }
 
     const insertPromise = await queryDB(pool, insertQuery)
-        .then(res => {
-          console.log(res, 'res from insert');
-          return res
-        })
+        .then(res => res)
         .catch(err => {
           console.log(err, 'err from insert');
+          return err
         })
 
-    return Promise.all([ insertPromise ])
+    const insertMetaSql = `
+        INSERT INTO wp_postmeta (
+          post_id,
+          meta_key,
+          meta_value
+        ) VALUES (
+          ?,
+          "_thumbnail_id",
+          (
+            SELECT ID FROM wp_posts
+              WHERE post_name=?
+          )
+        )
+    `
+    const insertMetaValues = [ id, postName ]
+
+    const insertMetaQuery = {
+      sql: insertMetaSql,
+      values: insertMetaValues
+    }
+    
+    const insertMetaPromise = await queryDB(pool, insertMetaQuery)
+      .then(res => res)
+      .catch(err => {
+        console.log(err, 'err from insert');
+        return err
+      })
+
+    return Promise.all([ insertPromise, insertMetaPromise ])
         .then(res => res)
         .catch(err => err)
   }
