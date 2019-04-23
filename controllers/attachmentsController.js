@@ -49,8 +49,8 @@ module.exports = {
   },
   /**
    * 
-   * Creates a row in the wp_posts table for an image.
-   * Requires that an image be uploaded via multer (see /utils/upload)
+   * Creates a row in the wp_posts table for an attachment.
+   * Requires that an attachment be uploaded via multer (see /utils/upload)
    * 
    * The id passed with the request is the parent post for the featured image.
    * 
@@ -66,7 +66,7 @@ module.exports = {
     if (tempName.length > 1) {
       postName = tempName.join('-').toLowerCase()
     } else {
-      postName = tempName.toLowerCase()
+      postName = tempName[0].toLowerCase()
     }
 
     const insertSql = `
@@ -103,15 +103,41 @@ module.exports = {
     const insertQuery = { sql: insertSql, values: insertValues }
 
     const insertPromise = await queryDB(pool, insertQuery)
-        .then(res => {
-          console.log(res, 'res from insert');
-          return res
-        })
+        .then(res => res)
         .catch(err => {
           console.log(err, 'err from insert');
+          return err
         })
 
-    return Promise.all([ insertPromise ])
+    const insertMetaSql = `
+        INSERT INTO wp_postmeta (
+          post_id,
+          meta_key,
+          meta_value
+        ) VALUES (
+          ?,
+          "_thumbnail_id",
+          (
+            SELECT ID FROM wp_posts
+              WHERE post_name=?
+          )
+        )
+    `
+    const insertMetaValues = [ id, postName ]
+
+    const insertMetaQuery = {
+      sql: insertMetaSql,
+      values: insertMetaValues
+    }
+    
+    const insertMetaPromise = await queryDB(pool, insertMetaQuery)
+      .then(res => res)
+      .catch(err => {
+        console.log(err, 'err from insert');
+        return err
+      })
+
+    return Promise.all([ insertPromise, insertMetaPromise ])
         .then(res => res)
         .catch(err => err)
   }
