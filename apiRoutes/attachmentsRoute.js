@@ -70,7 +70,7 @@ attachmentsRoute.get('/:id', async (req, res) => {
 attachmentsRoute.post('/:id', upload.single('attachment'), async (req, res) => {
   await createPostFeaturedImage(req)
     .then(data => {
-      console.log(data);
+      console.log(data, 'data');
       res.send({ data })
     })
     .catch(err => {

@@ -49,5 +49,99 @@ module.exports = {
       .then(results => results)
       .catch(err => err)
 
+  },
+  createUser: async (req) => {
+
+    const { body } = req
+
+    const userLogin = body.userLogin
+    const userPass = body.userPass
+    const userNicename = body.userNicename || userLogin
+    const userEmail = body.userEmail
+    const userUrl = body.userUrl || ''
+    const userActivationKey = body.userActivationKey || ''
+    const displayName = body.displayName || userLogin
+
+    const validateUsernameSql = `
+      SELECT * FROM wp_users
+        WHERE user_login = ?
+        LIMIT 1
+    `
+
+    const validateUsernameValue = [
+      userLogin
+    ]
+
+    const validateUsernameQuery = {
+      sql: validateUsernameSql,
+      values: validateUsernameValue
+    }
+
+    const validateUsernamePromise = await queryDB(pool, validateUsernameQuery)
+      .then(res => {
+        console.log(JSON.stringify(res, null, '\t'), 'res')
+        if (res.length) {
+          Promise.reject('That username already exists')
+        }
+        return true
+      })
+      .catch(err => err)
+
+    const newUserInsertSql = `
+      INSERT INTO wp_users (
+        user_login,
+        user_pass,
+        user_nicename,
+        user_email,
+        user_url,
+        user_registered,
+        user_activation_key,
+        user_status,
+        display_name,
+        spam,
+        deleted
+      ) VALUES (
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        CURRENT_TIMESTAMP,
+        ?,
+        0,
+        ?,
+        0,
+        0
+      )
+    `
+    
+    const userValues = [
+      userLogin,
+      userPass,
+      userNicename,
+      userEmail,
+      userUrl,
+      userActivationKey,
+      displayName
+    ]
+
+    const userInsertQuery = { sql: newUserInsertSql, values: userValues }
+
+    const userInsertPromise = await queryDB(pool, userInsertQuery)
+
+    return Promise.all([validateUsernamePromise, userInsertPromise])
+      .then(([validateUsernameRes, userInsertRes]) => {
+        console.log(JSON.stringify(validateUsernameRes, null, '\t'), 'valid res')
+        
+        return true
+      })
+      .catch(err => err)
+      .then(res => {
+        console.log(JSON.stringify(res, null, '\t'), 'last res')
+        return res
+      })
+    // return await queryDB(pool, userInsertQuery)
+    //   .then(results => results)
+    //   .catch(err => err);
   }
 }

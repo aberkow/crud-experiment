@@ -56,6 +56,9 @@ module.exports = {
    * 
    */
   createPostFeaturedImage: async (req) => {
+
+    if (!req.file) return;
+
     const id = parseInt(req.params.id)
     const { mimetype, filename } = req.file
     const imageTitle = req.body.post_title

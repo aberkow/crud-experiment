@@ -84,5 +84,6 @@ module.exports = {
             post_type,
             post_mime_type,
             comment_count`
-  }
+  },
+  // validateReqObject: ()
 }
